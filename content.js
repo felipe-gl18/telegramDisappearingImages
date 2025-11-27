@@ -19,3 +19,25 @@ async function handleImageBlob(url) {
 
   return image;
 }
+
+(() => {
+  if (window.__fileHandlerHooked) return;
+  window.__fileHandlerHooked = true;
+
+  const origin = HTMLInputElement.prototype.addEventListener;
+  HTMLInputElement.prototype.addEventListener = (type, handler, opts) => {
+    if (
+      type === "change" &&
+      this.type === "file" &&
+      !window.__capturedFileHandler
+    ) {
+      window.__capturedFileHandler = handler;
+      window.__capturedFileInput = this;
+      console.log("File input handler captured.");
+    }
+
+    return origin.call(this, type, handler, opts);
+  };
+
+  console.log("Hook activated.");
+})();
